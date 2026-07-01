@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>五健体检平台设计 Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f6f8;
+        --panel: #ffffff;
+        --ink: #172033;
+        --muted: #667085;
+        --line: #d9dee8;
+        --blue: #1769d2;
+        --cyan: #19b7d8;
+        --green: #19a974;
+        --orange: #f28c28;
+        --red: #e84f62;
+        --shadow: 0 14px 40px rgba(23, 32, 51, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
+        background: rgba(245, 246, 248, 0.92);
+        backdrop-filter: blur(18px);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.2;
+        letter-spacing: 0;
+      }
+
+      .count {
+        flex: 0 0 auto;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 7px 10px;
+        background: var(--panel);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .search {
+        margin-top: 14px;
+        width: 100%;
+        height: 42px;
+        padding: 0 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+        color: var(--ink);
+        outline: none;
+      }
+
+      .search:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(23, 105, 210, 0.12);
+      }
+
+      .tabs {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .tab {
+        flex: 0 0 auto;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 10px 14px;
+        background: #fff;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .tab.active {
+        border-color: transparent;
+        color: #fff;
+      }
+
+      .tab[data-theme="A"].active {
+        background: var(--blue);
+      }
+
+      .tab[data-theme="B"].active {
+        background: #071829;
+      }
+
+      .tab[data-theme="C"].active {
+        background: var(--green);
+      }
+
+      .tab[data-theme="D"].active {
+        background: #191b1f;
+      }
+
+      main {
+        width: min(1180px, 100%);
+        margin: 0 auto;
+        padding: 18px 16px 40px;
+      }
+
+      .scheme {
+        display: grid;
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+
+      .scheme-head {
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+        box-shadow: 0 8px 24px rgba(23, 32, 51, 0.05);
+      }
+
+      .scheme-head h2 {
+        margin: 0 0 8px;
+        font-size: 19px;
+      }
+
+      .scheme-head p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 14px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(23, 32, 51, 0.06);
+      }
+
+      .shot {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        background: #edf0f5;
+      }
+
+      .meta {
+        padding: 12px 14px 14px;
+      }
+
+      .meta strong {
+        display: block;
+        font-size: 15px;
+        line-height: 1.35;
+      }
+
+      .meta span {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .open {
+        margin-top: 10px;
+        width: 100%;
+        min-height: 40px;
+        border: 0;
+        border-radius: 10px;
+        background: #172033;
+        color: #fff;
+        font-weight: 800;
+      }
+
+      .viewer {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        display: none;
+        grid-template-rows: auto 1fr;
+        background: rgba(12, 16, 24, 0.96);
+      }
+
+      .viewer.opened {
+        display: grid;
+      }
+
+      .viewer-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: calc(12px + env(safe-area-inset-top)) 12px 12px;
+        color: #fff;
+      }
+
+      .viewer-title {
+        min-width: 0;
+        flex: 1;
+        font-size: 14px;
+        font-weight: 800;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      .viewer-bar button {
+        flex: 0 0 auto;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 999px;
+        padding: 9px 12px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        font-weight: 800;
+      }
+
+      .viewer-body {
+        overflow: auto;
+        padding: 0 10px calc(24px + env(safe-area-inset-bottom));
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .viewer-body img {
+        display: block;
+        width: min(100%, 1440px);
+        margin: 0 auto;
+        border-radius: 10px;
+        background: #fff;
+      }
+
+      .empty {
+        padding: 36px 16px;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      @media (min-width: 640px) {
+        h1 {
+          font-size: 26px;
+        }
+
+        .grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="title-row">
+          <h1>五健体检平台设计 Demo</h1>
+          <div class="count" id="count">128 张</div>
+        </div>
+        <input class="search" id="search" placeholder="搜索页面：如 采集、家长、接口、P15" />
+      </header>
+      <nav class="tabs" id="tabs"></nav>
+      <main id="content"></main>
+    </div>
+
+    <div class="viewer" id="viewer" aria-hidden="true">
+      <div class="viewer-bar">
+        <button id="closeViewer">关闭</button>
+        <div class="viewer-title" id="viewerTitle"></div>
+        <a id="downloadLink" download>
+          <button>下载</button>
+        </a>
+      </div>
+      <div class="viewer-body">
+        <img id="viewerImage" alt="" />
+      </div>
+    </div>
+
+    <script>
+      const schemes = [
+        {
+          id: "A",
+          name: "方案A-省级政务医疗平台",
+          short: "政务医疗",
+          desc: "传统政务医疗后台，强调多机构、权限、审计、任务和接口管理。",
+        },
+        {
+          id: "B",
+          name: "方案B-实时指挥中心产品",
+          short: "指挥中心",
+          desc: "深色态势大屏，强调实时进度、风险预警、现场调度和汇报展示。",
+        },
+        {
+          id: "C",
+          name: "方案C-儿童健康服务品牌产品",
+          short: "健康服务",
+          desc: "面向家长和学校的健康服务体验，强调报告解读、复查建议和健康教育。",
+        },
+        {
+          id: "D",
+          name: "方案D-临床采集效率工具",
+          short: "采集工具",
+          desc: "面向现场医护的效率工具，强调快速录入、离线同步、设备状态和异常复核。",
+        },
+      ];
+
+      const pages = [
+        ["P01", "登录/角色入口", "医院端、学校端、医护端、家长端入口"],
+        ["P02", "工作台首页", "今日任务、异常待复核、离线同步状态"],
+        ["P03", "组织与角色管理", "组织树、角色列表、数据范围、权限矩阵"],
+        ["P04", "用户权限与审计", "操作日志、敏感操作、导出记录、审计筛选"],
+        ["P05", "学校班级学生管理", "学校/年级/班级树、学生表、导入导出按钮"],
+        ["P06", "数据导入结果", "成功/失败统计、错误行、错误原因、重试"],
+        ["P07", "儿童健康档案列表", "风险标签、最近体检、档案状态"],
+        ["P08", "儿童档案详情", "五健指标、趋势图、复查记录"],
+        ["P09", "档案合并弹窗", "重复字段对比、合并策略、冲突提示"],
+        ["P10", "体检任务列表", "任务进度、覆盖人数、异常数、同步状态"],
+        ["P11", "任务创建向导", "步骤条、项目选择、科室人员、通知"],
+        ["P12", "项目与规则配置", "年龄段、性别、指标阈值、建议文案"],
+        ["P13", "二维码/条码打印", "打印预览、绑定状态、批量生成"],
+        ["P14", "医护采集工作台", "待检队列、采集进度、设备状态"],
+        ["P15", "单人采集录入", "分项录入、范围校验、漏项提示"],
+        ["P16", "离线同步中心", "本地暂存、同步队列、冲突记录"],
+        ["P17", "设备接入状态", "身高体重仪、视力、血压、肺活量设备"],
+        ["P18", "异常复核", "异常字段、规则说明、复核意见"],
+        ["P19", "纸质补登", "按学生/项目快速补登、补登来源"],
+        ["P20", "随访工作台", "联系状态、通知渠道、随访结果"],
+        ["P21", "五健总览", "营养、视力、脊柱、口腔、心理五类卡片"],
+        ["P22", "五健专题详情", "异常分布、趋势、建议、复查计划"],
+        ["P23", "家长端信息确认", "基础信息、既往史、过敏史、同意确认"],
+        ["P24", "家长端报告", "本次报告、历次趋势、异常项、建议"],
+        ["P25", "家长端健康教育", "推荐文章、异常关联、阅读状态"],
+        ["P26", "接口配置", "接口系统列表、认证方式、启用状态"],
+        ["P27", "数据交换记录", "批次记录、匹配率、失败原因"],
+        ["P28", "转诊协同", "建议科室、预约状态、回传结果"],
+        ["P29", "区域统计驾驶舱", "覆盖率、完成率、异常率、复查率"],
+        ["P30", "现场调度大屏", "采集点位、漏项预警、设备在线"],
+        ["P31", "汇报只读模式", "脱敏数据、无后台入口、只读标识"],
+        ["P32", "系统部署与备份", "部署环境、备份计划、恢复记录"],
+      ];
+
+      let activeScheme = "A";
+      let query = "";
+
+      const tabs = document.getElementById("tabs");
+      const content = document.getElementById("content");
+      const count = document.getElementById("count");
+      const search = document.getElementById("search");
+      const viewer = document.getElementById("viewer");
+      const viewerImage = document.getElementById("viewerImage");
+      const viewerTitle = document.getElementById("viewerTitle");
+      const closeViewer = document.getElementById("closeViewer");
+      const downloadLink = document.getElementById("downloadLink");
+
+      const fileName = (page) => `${page[0]}-${page[1].replace("/", "-")}.png`;
+      const imagePath = (scheme, page) =>
+        ["screenshots-v2", scheme.name, fileName(page)].map(encodeURIComponent).join("/");
+
+      function renderTabs() {
+        tabs.innerHTML = "";
+        for (const scheme of schemes) {
+          const button = document.createElement("button");
+          button.className = `tab ${scheme.id === activeScheme ? "active" : ""}`;
+          button.dataset.theme = scheme.id;
+          button.textContent = scheme.short;
+          button.addEventListener("click", () => {
+            activeScheme = scheme.id;
+            render();
+          });
+          tabs.appendChild(button);
+        }
+      }
+
+      function openViewer(scheme, page) {
+        const src = imagePath(scheme, page);
+        viewerImage.src = src;
+        viewerImage.alt = `${scheme.short} ${page[0]} ${page[1]}`;
+        viewerTitle.textContent = `${scheme.short} · ${page[0]} ${page[1]}`;
+        downloadLink.href = src;
+        viewer.classList.add("opened");
+        viewer.setAttribute("aria-hidden", "false");
+      }
+
+      function close() {
+        viewer.classList.remove("opened");
+        viewer.setAttribute("aria-hidden", "true");
+        viewerImage.src = "";
+      }
+
+      function render() {
+        renderTabs();
+        const scheme = schemes.find((item) => item.id === activeScheme);
+        const normalized = query.trim().toLowerCase();
+        const filtered = pages.filter((page) => {
+          const haystack = `${page[0]} ${page[1]} ${page[2]}`.toLowerCase();
+          return !normalized || haystack.includes(normalized);
+        });
+        count.textContent = `${filtered.length} / 32`;
+        content.innerHTML = "";
+
+        const section = document.createElement("section");
+        section.className = "scheme";
+        section.innerHTML = `
+          <div class="scheme-head">
+            <h2>${scheme.name}</h2>
+            <p>${scheme.desc}</p>
+          </div>
+        `;
+        const grid = document.createElement("div");
+        grid.className = "grid";
+
+        for (const page of filtered) {
+          const card = document.createElement("article");
+          card.className = "card";
+          const src = imagePath(scheme, page);
+          card.innerHTML = `
+            <img class="shot" loading="lazy" src="${src}" alt="${scheme.short} ${page[0]} ${page[1]}" />
+            <div class="meta">
+              <strong>${page[0]} ${page[1]}</strong>
+              <span>${page[2]}</span>
+              <button class="open">查看大图</button>
+            </div>
+          `;
+          card.querySelector("button").addEventListener("click", () => openViewer(scheme, page));
+          card.querySelector("img").addEventListener("click", () => openViewer(scheme, page));
+          grid.appendChild(card);
+        }
+
+        if (!filtered.length) {
+          grid.innerHTML = '<div class="empty">没有匹配的页面</div>';
+        }
+
+        section.appendChild(grid);
+        content.appendChild(section);
+      }
+
+      search.addEventListener("input", (event) => {
+        query = event.target.value;
+        render();
+      });
+      closeViewer.addEventListener("click", close);
+      viewer.addEventListener("click", (event) => {
+        if (event.target === viewer) close();
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") close();
+      });
+
+      render();
+    </script>
+  </body>
+</html>

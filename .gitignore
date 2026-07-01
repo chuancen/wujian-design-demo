@@ -1,0 +1,16 @@
+# Local/generated archives
+*.zip
+
+# Previous iteration assets kept locally but not needed for the GitHub demo
+SCREENSHOTS.md
+screenshots/
+screenshot-sources-svg/
+screenshot-sources-svg-v2/
+
+# Utility scripts not needed for static viewing
+tools/generate_screenshots.py
+tools/send_gmail_attachments.py
+
+# Python cache
+__pycache__/
+*.pyc
