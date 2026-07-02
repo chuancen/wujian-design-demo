@@ -6,6 +6,7 @@ SCREENSHOTS.md
 screenshots/
 screenshot-sources-svg/
 screenshot-sources-svg-v2/
+screenshot-sources-svg-v3/
 
 # Utility scripts not needed for static viewing
 tools/generate_screenshots.py

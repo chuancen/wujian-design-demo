@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>五健体检平台设计 Demo</title>
+    <title>五健体检平台四套设计 Demo</title>
     <style>
       :root {
         color-scheme: light;
@@ -328,15 +328,15 @@
       const schemes = [
         {
           id: "A",
-          name: "方案A-省级政务医疗平台",
-          short: "政务医疗",
-          desc: "传统政务医疗后台，强调多机构、权限、审计、任务和接口管理。",
+          name: "方案A-Winform内网桌面系统",
+          short: "Winform",
+          desc: "Windows 桌面软件风格，强调内网部署、菜单工具栏、树导航、数据表格和模态窗口。",
         },
         {
           id: "B",
-          name: "方案B-实时指挥中心产品",
-          short: "指挥中心",
-          desc: "深色态势大屏，强调实时进度、风险预警、现场调度和汇报展示。",
+          name: "方案B-Java企业管理平台",
+          short: "Java后台",
+          desc: "Java/Spring 企业管理后台风格，强调左侧菜单、顶部账号区、查询表格、抽屉和对话框。",
         },
         {
           id: "C",
@@ -402,7 +402,7 @@
 
       const fileName = (page) => `${page[0]}-${page[1].replace("/", "-")}.png`;
       const imagePath = (scheme, page) =>
-        ["screenshots-v2", scheme.name, fileName(page)].map(encodeURIComponent).join("/");
+        ["screenshots-v3", scheme.name, fileName(page)].map(encodeURIComponent).join("/");
 
       function renderTabs() {
         tabs.innerHTML = "";
